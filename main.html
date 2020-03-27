@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <button id="shut_down_now">立即关机</button>
+    <br>
+    <input id="time_delay" style="width: 50px;"/>分钟后
+    <button id="shut_down_at_time">定时关机</button>
+    <button id="shut_down_at_time_cancel">取消定时关机</button>
+    <p id="countDownTv"></p>
+    <script>
+        var execShutDown = function (time) {
+            console.log('shutdown -s -t '+time)
+            $.post("/",{
+                option:"shutDownDelay",
+                time:time
+            },function(data,status){
+                console.log(status)
+                console.log(data)
+            })
+        }
+        
+        var cancelShutDownCMD = function(){
+            console.log('取消定时关机')
+             //todo:用http调用回nodejs来执行本地命令的执行
+             $.post("/",{
+                option:"cancel"
+            },function(data,status){
+                console.log(status)
+                console.log(data)
+            })
+        }
+        var intervalSwitch = false;
+        var time = 0;
+        setInterval(function(){
+                if(intervalSwitch){
+                    time--;
+                    document.getElementById("countDownTv").innerText = time
+                    if(time == 0){
+                        intervalSwitch = false;
+                    }
+                }
+            },1000)
+       
+        document.getElementById("shut_down_now").onclick = function() {
+            execShutDown(0)
+        }
+        document.getElementById("shut_down_at_time").onclick = function() {
+            var picker = document.getElementById("time_delay");
+            time = picker.value*60;
+            intervalSwitch = true;
+            execShutDown(time)
+        }
+        document.getElementById("shut_down_at_time_cancel").onclick = function(){
+            cancelShutDownCMD();
+            intervalSwitch = false;
+            time = 0;
+            document.getElementById("countDownTv").innerText = "";
+
+        }
+    </script>
+</body>
+</html>
